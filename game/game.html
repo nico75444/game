@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aprende Inglés</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('interfa.jpg');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .game-container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 2em;
+            color: #333;
+        }
+        #word-display {
+            font-size: 1.5em;
+            margin: 20px 0;
+            color: #007bff;
+        }
+        #score, #level {
+            font-size: 1em;
+            color: #555;
+            margin: 5px;
+        }
+        #user-input {
+            padding: 10px;
+            font-size: 1.2em;
+            width: 80%;
+            margin-bottom: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background-color: #ccc;
+        }
+        #next-level-button {
+            display: none;
+            margin-top: 15px;
+            background-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Aprende Inglés</h1>
+    <div id="level">Nivel: 1</div>
+    <div id="score">Puntuación: 0</div>
+    <div id="word-display">Presiona "Reproducir" para comenzar</div>
+    <input type="text" id="user-input" placeholder="Escribe aquí la palabra..." disabled>
+    <button id="play-button">Reproducir</button>
+    <button id="next-level-button">Siguiente Nivel</button>
+</div>
+
+<script>
+    const words = {
+        1: ["my house is larger than hers"],
+        2: ["this box is smaller than the one l lost"],
+        3: ["your dog runs faster than jims dog"]
+    };
+
+    let score = 0;
+    let level = 1;
+    let currentWord = "";
+    const maxLevel = 3;
+
+    const scoreDisplay = document.getElementById('score');
+    const levelDisplay = document.getElementById('level');
+    const wordDisplay = document.getElementById('word-display');
+    const userInput = document.getElementById('user-input');
+    const playButton = document.getElementById('play-button');
+    const nextLevelButton = document.getElementById('next-level-button');
+
+    // Función para actualizar puntuación y nivel
+    function updateScoreAndLevel() {
+        scoreDisplay.textContent = `Puntuación: ${score}`;
+        levelDisplay.textContent = `Nivel: ${level}`;
+    }
+
+    // Función para obtener una palabra aleatoria
+    function getRandomWord() {
+        const wordList = words[level] || words[1];
+        return wordList[Math.floor(Math.random() * wordList.length)];
+    }
+
+    // Función para reproducir el audio de la palabra
+    function playAudio(word) {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        speechSynthesis.speak(utterance);
+    }
+
+    // Iniciar nueva ronda
+    function startNewRound() {
+        currentWord = getRandomWord();
+        wordDisplay.textContent = "Escucha la palabra y escríbela...";
+        userInput.value = "";
+        userInput.disabled = false;
+        userInput.focus();
+    }
+
+    // Manejar evento de reproducción
+    playButton.addEventListener('click', () => {
+        if (currentWord) {
+            playAudio(currentWord);
+        } else {
+            startNewRound();
+            playAudio(currentWord);
+        }
+    });
+
+    // Manejar entrada del usuario
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (userInput.value.toLowerCase() === currentWord) {
+                score += 10;
+                updateScoreAndLevel();
+                wordDisplay.textContent = "¡Correcto!";
+                userInput.disabled = true;
+                if (level === maxLevel) {
+                    wordDisplay.textContent = `Juego terminado. Puntuación final: ${score}`;
+                    playButton.disabled = true;
+                    nextLevelButton.textContent = "Reiniciar";
+                    location.href = "nivel3.html";
+                    nextLevelButton.style.display = "inline-block";
+                } else {
+                    nextLevelButton.style.display = "inline-block";
+                }
+            } else {
+                wordDisplay.textContent = "Intenta de nuevo.";
+                userInput.value = "";
+            }
+        }
+    });
+
+    // Avanzar al siguiente nivel o reiniciar
+    nextLevelButton.addEventListener('click', () => {
+        if (level === maxLevel) {
+            level = 1;
+            score = 0;
+            playButton.disabled = false;
+            nextLevelButton.style.display = "none";
+            updateScoreAndLevel();
+        } else {
+            level += 1;
+            updateScoreAndLevel();
+            nextLevelButton.style.display = "none";
+            startNewRound();
+            playAudio(currentWord);
+        }
+    });
+
+    // Inicializar puntuación y nivel
+    updateScoreAndLevel();
+</script>
+
+</body>
+</html>
+

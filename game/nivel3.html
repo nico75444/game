@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ordena Frases en Comparativo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url(interfa.jpg);
+            background-size:cover;
+    background-position: center;
+    background-repeat: no-repeat;
+        }
+        .game-container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #scrambled-sentence {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .word {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        #success-message {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        #next-button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>Ordena la Frase en Comparativo</h1>
+    <div id="scrambled-sentence"></div>
+    <div id="success-message"></div>
+    <button id="next-button">Siguiente Frase</button>
+</div>
+
+<script>
+    const sentences = [
+        { scrambled: ["than", "dog", "Jim's", "runs", "your", "faster"], correct: "your dog runs faster than Jim's" },
+        { scrambled: ["is", "this", "than", "box", "smaller", "the", "one", "I", "lost"], correct: "this box is smaller than the one I lost" },
+        { scrambled: ["larger", "house", "is", "my", "than", "hers"], correct: "my house is larger than hers" }
+    ];
+
+    let currentSentenceIndex = 0;
+
+    const scrambledSentenceContainer = document.getElementById('scrambled-sentence');
+    const successMessage = document.getElementById('success-message');
+    const nextButton = document.getElementById('next-button');
+
+    function loadSentence() {
+        // Limpiar mensajes y ocultar botón de "Siguiente"
+        scrambledSentenceContainer.innerHTML = "";
+        successMessage.textContent = "";
+        nextButton.style.display = "none";
+
+        // Obtener la oración desordenada
+        const sentence = sentences[currentSentenceIndex];
+        sentence.scrambled.forEach(word => {
+            const wordElement = document.createElement('div');
+            wordElement.textContent = word;
+            wordElement.classList.add('word');
+            wordElement.draggable = true;
+            wordElement.addEventListener('dragstart', handleDragStart);
+            wordElement.addEventListener('dragover', handleDragOver);
+            wordElement.addEventListener('drop', handleDrop);
+            scrambledSentenceContainer.appendChild(wordElement);
+        });
+    }
+
+    let draggedWord;
+
+    function handleDragStart(event) {
+        draggedWord = event.target;
+        event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        if (event.target.classList.contains('word')) {
+            const currentParent = draggedWord.parentNode;
+            const targetParent = event.target.parentNode;
+            const draggedIndex = Array.from(currentParent.children).indexOf(draggedWord);
+            const targetIndex = Array.from(targetParent.children).indexOf(event.target);
+            
+            if (draggedIndex < targetIndex) {
+                targetParent.insertBefore(draggedWord, event.target.nextSibling);
+            } else {
+                targetParent.insertBefore(draggedWord, event.target);
+            }
+
+            checkSentenceOrder();
+        }
+    }
+
+    function checkSentenceOrder() {
+        const orderedSentence = Array.from(scrambledSentenceContainer.children).map(word => word.textContent).join(" ");
+        if (orderedSentence === sentences[currentSentenceIndex].correct) {
+            successMessage.textContent = "¡Correcto!";
+            nextButton.style.display = "inline-block";
+        }
+    }
+
+    nextButton.addEventListener('click', () => {
+        currentSentenceIndex++;
+        if (currentSentenceIndex < sentences.length) {
+            loadSentence();
+        } else {
+            successMessage.textContent = "¡Felicidades, has completado todas las frases!";
+            nextButton.style.display = "none";
+        }
+    });
+
+    loadSentence();
+</script>
+
+</body>
+</html>
+
